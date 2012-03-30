@@ -88,12 +88,13 @@ def datasetConfigs = [
 phony("all") {
     dsKey = 'ml-100k'
     def dsConfig = datasetConfigs[dsKey]
-    for (int n = 1; n < 4; n++) {
+    for (int i = 0; i <= 20; i++) {
+        int n = (i == 0) ? 1000 : i;
         for (def fd : fakeDomains) {
             for (def pd : predictDomains) {
                 depends trainTest(dsKey + '-' + fd.key + '-' + pd.key + '-' + n) {
-                    def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}";
-                    output "${pathPrefix}/eval-results.csv"
+                    def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-${n}";
+                    output "${pathPrefix}/eval-results-${pd.key}.csv"
                     for (int i = 0; i < 5; i++) {
                         dataset {
                             train "${pathPrefix}/train.${i}.csv"
