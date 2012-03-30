@@ -78,28 +78,26 @@ phony("all") {
     def dsConfig = datasetConfigs[dsKey]
     for (int n = 1; n < 4; n++) {
         for (def fd : fakeDomains) {
-            for (def pd : predictDomains) {
-                depends crossfold(dsKey + '-' + fd.key + '-' + pd.key + '-' + n) {
-                    source csvfile(dsConfig.path) {
-                        wrapper { csvDao ->
-                            return new RescaledRatingDao.Factory(
-                                    dsConfig.domain,
-                                    fd.value.domain,
-                                    csvDao,
-                                    fd.value.thresholds
-                            );
-                        }
-                        file dsConfig.path
-                        delimiter dsConfig.delimiter
-                        domain dsConfig.domain
+            depends crossfold(dsKey + '-' + fd.key + '-' + n) {
+                source csvfile(dsConfig.path) {
+                    wrapper { csvDao ->
+                        return new RescaledRatingDao.Factory(
+                                dsConfig.domain,
+                                fd.value.domain,
+                                csvDao,
+                                fd.value.thresholds
+                        );
                     }
-                    order RandomOrder
-                    holdout 10
-                    partitions 5
-                    train "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}/train.%d.csv"
-                    test "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}/test.%d.csv"
-                    partitionAlgorithm new RetainCountPartition(n)
+                    file dsConfig.path
+                    delimiter dsConfig.delimiter
+                    domain dsConfig.domain
                 }
+                order RandomOrder
+                holdout 10
+                partitions 5
+                train "${buildDir}/splits/${dsKey}/${fd.key}-${n}/train.%d.csv"
+                test "${buildDir}/splits/${dsKey}/${fd.key}-${n}/test.%d.csv"
+                partitionAlgorithm new RetainCountPartition(n)
             }
         }
     }
