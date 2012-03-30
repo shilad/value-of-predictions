@@ -76,7 +76,7 @@ def datasetConfigs = [
 phony("all") {
     dsKey = 'ml-100k'
     def dsConfig = datasetConfigs[dsKey]
-    for (int n = 1; n < 4; n++) {
+    for (int n = 1; n < 20; n++) {
         for (def fd : fakeDomains) {
             depends crossfold(dsKey + '-' + fd.key + '-' + n) {
                 source csvfile(dsConfig.path) {
