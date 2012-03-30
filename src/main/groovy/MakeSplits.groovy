@@ -62,7 +62,7 @@ def datasetConfigs = [
                 'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
         ],
         'ml-1m' : [
-                'path' : buildDir + '/ml-1m/u.data',
+                'path' : buildDir + '/ml-1m/ratings.dat',
                 'delimiter' : '::',
                 'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
         ],
