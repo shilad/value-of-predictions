@@ -60,12 +60,6 @@ public class RescaledRatingDao implements DataAccessObject {
                 break;
             }
         }
-        // normalized will be in [0,1]
-//        double normalized = (rating.getPreference().getValue() - originalDomain.getMinimum())
-//                        / (originalDomain.getMaximum() - originalDomain.getMinimum());
-//        double rescaled = normalized * (newDomain.getMaximum() - newDomain.getMinimum()) + newDomain.getMinimum();
-//
-//        double binned = Utils.binRating(newDomain, rescaled);
         return new SimpleRating(rating.getId(), rating.getUserId(), rating.getItemId(), r2, rating.getTimestamp());
     }
 

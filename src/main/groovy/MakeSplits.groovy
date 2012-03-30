@@ -21,6 +21,7 @@ import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 import org.grouplens.ratingvalue.RescaledRatingDao
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.ratingvalue.RetainCountPartition
+import org.grouplens.lenskit.eval.data.crossfold.TimestampOrder
 
 
 def buildDir = "pwd".execute().text.trim()
@@ -34,10 +35,10 @@ def fakeDomains = [
                 domain : new PreferenceDomain(1.0, 5.0, 1.0),
                 thresholds : [2.0,3.0,4.0,5.0] as double[]
         ],
-        '5halfstar' : [
-                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
-        ]
+//        '5halfstar' : [
+//                domain : new PreferenceDomain(1.0, 5.0, 0.5),
+//                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
+//        ]
 ]
 
 def predictDomains = [
@@ -74,9 +75,10 @@ def datasetConfigs = [
 ]
 
 phony("all") {
-    dsKey = 'ml-100k'
+    dsKey = 'ml-1m'
     def dsConfig = datasetConfigs[dsKey]
-    for (int n = 1; n < 20; n++) {
+    for (int i = 0; i <= 20; i++) {
+        int n = (i == 0) ? 1000 : i
         for (def fd : fakeDomains) {
             depends crossfold(dsKey + '-' + fd.key + '-' + n) {
                 source csvfile(dsConfig.path) {
@@ -92,12 +94,16 @@ phony("all") {
                     delimiter dsConfig.delimiter
                     domain dsConfig.domain
                 }
-                order RandomOrder
                 holdout 10
                 partitions 5
                 train "${buildDir}/splits/${dsKey}/${fd.key}-${n}/train.%d.csv"
                 test "${buildDir}/splits/${dsKey}/${fd.key}-${n}/test.%d.csv"
-                partitionAlgorithm new RetainCountPartition(n)
+                if (n == 1000) {
+                    order RandomOrder
+                } else {
+                    order TimestampOrder
+                    partitionAlgorithm new RetainCountPartition(n)
+                }
             }
         }
     }
