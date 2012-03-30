@@ -55,8 +55,9 @@ public class RescaledRatingDao implements DataAccessObject {
         double r1 = rating.getPreference().getValue();
         double r2 = newDomain.getMaximum();
         for (int i = 0; i < thresholds.length; i++) {
-            if (r1 < thresholds[i]) {
+            if (r1 < thresholds[i] - 0.001) {
                 r2 = quantizer.getValue(i);
+                break;
             }
         }
         // normalized will be in [0,1]
