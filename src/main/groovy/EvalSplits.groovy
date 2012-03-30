@@ -18,9 +18,21 @@
  */
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
-import org.grouplens.ratingvalue.RescaledRatingDao
 import org.grouplens.lenskit.data.pref.PreferenceDomain
-import org.grouplens.ratingvalue.RetainCountPartition
+import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
+import org.grouplens.ratingvalue.MutualInformationMetric
+import org.grouplens.lenskit.RatingPredictor
+import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
+import org.grouplens.lenskit.baseline.BaselinePredictor
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.params.UserVectorNormalizer
+import org.grouplens.lenskit.norm.VectorNormalizer
+import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
+import org.grouplens.lenskit.knn.params.SimilarityDamping
+import org.grouplens.lenskit.knn.params.NeighborhoodSize
 
 
 def buildDir = "pwd".execute().text.trim()
@@ -79,26 +91,28 @@ phony("all") {
     for (int n = 1; n < 4; n++) {
         for (def fd : fakeDomains) {
             for (def pd : predictDomains) {
-                depends crossfold(dsKey + '-' + fd.key + '-' + pd.key + '-' + n) {
-                    source csvfile(dsConfig.path) {
-                        wrapper { csvDao ->
-                            return new RescaledRatingDao.Factory(
-                                    dsConfig.domain,
-                                    fd.value.domain,
-                                    csvDao,
-                                    fd.value.thresholds
-                            );
+                depends trainTest(dsKey + '-' + fd.key + '-' + pd.key + '-' + n) {
+                    def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}";
+                    output "${pathPrefix}/eval-results.csv"
+                    for (int i = 0; i < 5; i++) {
+                        dataset {
+                            train "${pathPrefix}/train.${i}.csv"
+                            test "${pathPrefix}/test.${i}.csv"
                         }
-                        file dsConfig.path
-                        delimiter dsConfig.delimiter
-                        domain dsConfig.domain
                     }
-                    order RandomOrder
-                    holdout 10
-                    partitions 5
-                    train "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}/train.%d.csv"
-                    test "${buildDir}/splits/${dsKey}/${fd.key}-to-${pd.key}-${n}/test.%d.csv"
-                    partitionAlgorithm new RetainCountPartition(n)
+                    metric CoveragePredictMetric
+                    metric MAEPredictMetric
+                    metric RMSEPredictMetric
+                    metric NDCGPredictMetric
+                    metric (new MutualInformationMetric(fd.value.domain, pd.value.domain))
+
+                    algorithm("ItemItem") {
+                        setComponent(RatingPredictor, ItemItemRatingPredictor)
+                        setComponent(BaselinePredictor, ItemUserMeanPredictor)
+                        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+                        set(SimilarityDamping, 100)
+                        set(NeighborhoodSize, 30);
+                    }
                 }
             }
         }

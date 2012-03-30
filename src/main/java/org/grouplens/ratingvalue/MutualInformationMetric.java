@@ -16,15 +16,22 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MutualInformationMetric.class);
     private static final String[] COLUMNS = { "MI", "MI.ByUser" };
     private static final String[] USER_COLUMNS = {"MI"};
-    private PreferenceDomain domain;
+    private PreferenceDomain inDomain;
+    private PreferenceDomain outDomain;
 
     public MutualInformationMetric(PreferenceDomain domain) {
-        this.domain = domain;
+        this.inDomain = domain;
+        this.outDomain = domain;
+    }
+
+    public MutualInformationMetric(PreferenceDomain inDomain, PreferenceDomain outDomain) {
+        this.inDomain = inDomain;
+        this.outDomain = outDomain;
     }
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
-        return new Accum(domain);
+        return new Accum(inDomain, outDomain);
     }
 
     @Override
@@ -44,18 +51,20 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
         private int nratings = 0;
         private int nusers = 0;
 
-        private PreferenceDomain domain;
+        private PreferenceDomain inDomain;
+        private PreferenceDomain outDomain;
 
-        public Accum(PreferenceDomain domain) {
-            this.domain = domain;
-            this.counter = new MutualInformationCounter(domain);
+        public Accum(PreferenceDomain inDomain, PreferenceDomain outDomain) {
+            this.inDomain = inDomain;
+            this.outDomain = outDomain;
+            this.counter = new MutualInformationCounter(inDomain, outDomain);
         }
 
         @Override
         public String[] evaluate(TestUser user) {
             int n = 0;
             
-            MutualInformationCounter userCounter = new MutualInformationCounter(domain);
+            MutualInformationCounter userCounter = new MutualInformationCounter(inDomain, outDomain);
 
             // overall
             for (Long2DoubleMap.Entry e: user.getTestRatings().fast()) {
