@@ -14,8 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MutualInformationMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MutualInformationMetric.class);
-    private static final String[] COLUMNS = { "MI", "MI.ByUser" };
-    private static final String[] USER_COLUMNS = {"MI"};
+    private String name = "MI";
     private PreferenceDomain inDomain;
     private PreferenceDomain outDomain;
 
@@ -29,19 +28,25 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
         this.outDomain = outDomain;
     }
 
+    public MutualInformationMetric(String name, PreferenceDomain inDomain, PreferenceDomain outDomain) {
+        this.name = name;
+        this.inDomain = inDomain;
+        this.outDomain = outDomain;
+    }
+
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
-        return new Accum(inDomain, outDomain);
+        return new Accum();
     }
 
     @Override
     public String[] getColumnLabels() {
-        return COLUMNS;
+        return new String[] { name, name + ".ByUser" };
     }
 
     @Override
     public String[] getUserColumnLabels() {
-        return USER_COLUMNS;
+        return new String[] { name };
     }
     
     class Accum implements TestUserMetricAccumulator {
@@ -51,12 +56,7 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
         private int nratings = 0;
         private int nusers = 0;
 
-        private PreferenceDomain inDomain;
-        private PreferenceDomain outDomain;
-
-        public Accum(PreferenceDomain inDomain, PreferenceDomain outDomain) {
-            this.inDomain = inDomain;
-            this.outDomain = outDomain;
+        public Accum() {
             this.counter = new MutualInformationCounter(inDomain, outDomain);
         }
 
@@ -91,7 +91,7 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
         public String[] finalResults() {
             double v = counter.calculate();
             double uv = userMutualInformationSum / nusers;
-            logger.info("MI: overall {}, by-user {}", new Object[] {v, uv});
+            logger.info("{}: overall {}, by-user {}", new Object[] {name, v, uv});
             return new String[]{
                     Double.toString(v),
                     Double.toString(uv)

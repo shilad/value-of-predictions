@@ -47,7 +47,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.ratingvalue.MutualInformationMetric
 import org.grouplens.ratingvalue.RetainCountPartition
 
-def baselines = [GlobalMeanPredictor, UserMeanPredictor, ItemMeanPredictor, ItemUserMeanPredictor]
+def baselines = [ItemUserMeanPredictor]
 
 def buildDir = "/Users/shilad/Documents/Intellij/RatingPredictionValue"
 

@@ -91,29 +91,29 @@ phony("all") {
     for (int i = 0; i <= 20; i++) {
         int n = (i == 0) ? 1000 : i;
         for (def fd : fakeDomains) {
-            for (def pd : predictDomains) {
-                depends trainTest(dsKey + '-' + fd.key + '-' + pd.key + '-' + n) {
-                    def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-${n}";
-                    output "${pathPrefix}/eval-results-${pd.key}.csv"
-                    for (int i = 0; i < 5; i++) {
-                        dataset {
-                            train "${pathPrefix}/train.${i}.csv"
-                            test "${pathPrefix}/test.${i}.csv"
-                        }
+            depends trainTest(dsKey + '-' + fd.key + '-' + n) {
+                def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-${n}";
+                output "${pathPrefix}/eval-results.csv"
+                for (int j = 0; j < 5; j++) {
+                    dataset {
+                        train "${pathPrefix}/train.${j}.csv"
+                        test "${pathPrefix}/test.${j}.csv"
                     }
-                    metric CoveragePredictMetric
-                    metric MAEPredictMetric
-                    metric RMSEPredictMetric
-                    metric NDCGPredictMetric
-                    metric (new MutualInformationMetric(fd.value.domain, pd.value.domain))
+                }
+                metric CoveragePredictMetric
+                metric MAEPredictMetric
+                metric RMSEPredictMetric
+                metric NDCGPredictMetric
+                for (def pd : predictDomains) {
+                    metric (new MutualInformationMetric("MI-${pd.key}", fd.value.domain, pd.value.domain))
+                }
 
-                    algorithm("ItemItem") {
-                        setComponent(RatingPredictor, ItemItemRatingPredictor)
-                        setComponent(BaselinePredictor, ItemUserMeanPredictor)
-                        setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
-                        set(SimilarityDamping, 100)
-                        set(NeighborhoodSize, 30);
-                    }
+                algorithm("ItemItem") {
+                    setComponent(RatingPredictor, ItemItemRatingPredictor)
+                    setComponent(BaselinePredictor, ItemUserMeanPredictor)
+                    setComponent(UserVectorNormalizer, VectorNormalizer, BaselineSubtractingNormalizer)
+                    set(SimilarityDamping, 100)
+                    set(NeighborhoodSize, 30);
                 }
             }
         }

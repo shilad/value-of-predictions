@@ -75,7 +75,7 @@ def datasetConfigs = [
 ]
 
 phony("all") {
-    dsKey = 'ml-1m'
+    dsKey = 'ml-100k'
     def dsConfig = datasetConfigs[dsKey]
     for (int i = 0; i <= 20; i++) {
         int n = (i == 0) ? 1000 : i
