@@ -23,9 +23,9 @@ def main(paths):
         if not fields:
             fields = list(means.keys())
             fields.sort()
-            print ','.join(['n'] + fields)
+            print ','.join(['n', 'inscale'] + fields)
 
-        tokens = [n]
+        tokens = [n, inScale]
         for f in fields:
             tokens.append(means.get(f, 0.0))
 
