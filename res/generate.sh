@@ -1,9 +1,6 @@
 #!/bin/bash
 
-dataset="ml-100k"
-metrics="RMSE.ByRating RMSE.ByUser MAE MAE.ByUser MI MI.ByUser"
+dataset="ml-10m"
 
-for m in $metrics; do
-    python2.6 ./src/main/python/aggregate.py $m splits/$dataset >res/$dataset.$m.csv
-done
+python2.6 ./src/main/python/aggregate.py splits/$dataset > res/$dataset.csv
 

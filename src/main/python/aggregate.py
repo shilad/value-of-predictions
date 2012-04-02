@@ -1,3 +1,4 @@
+import collections
 import csv
 import sys
 import os
@@ -10,33 +11,47 @@ SCALE_POINTS = {
     '5halfstar' : 9,
 }
 
-def main(field, paths):
+def main(paths):
     results = set()
     for path in paths:
         results.update(find_files(path))
 
-    print 'in-scale,out-scale,num-ratings,%s' % field
+    fields = []
     for path in results:
-        (inScale, outScale, n) = get_info(path)
-        mean = get_field_mean(field, path)
-        if inScale == 9: continue # remove me!
-        print ','.join(map(str, [inScale, outScale, n, mean]))
+        (inScale, n) = get_info(path)
+        means = get_field_means(path)
+        if not fields:
+            fields = list(means.keys())
+            fields.sort()
+            print ','.join(['n'] + fields)
+
+        tokens = [n]
+        for f in fields:
+            tokens.append(means.get(f, 0.0))
+
+        print ','.join(map(str, tokens))
 
 def get_info(path):
-    """ Path format is ./splits/ml-100k/5star-to-5star-2/eval-results.csv """
+    """ Path format is ./splits/ml-100k/5star-2/eval-results.csv """
+    values = {}
     last_directory = os.path.split(os.path.split(path)[0])[1]
-    (inScale, _, outScale, n) = last_directory.split('-')
-    return SCALE_POINTS[inScale], SCALE_POINTS[outScale], int(n)
+    (inScale, n) = last_directory.split('-')
+    return SCALE_POINTS[inScale], int(n)
 
-def get_field_mean(field, path):
+def get_field_means(path):
     reader = csv.DictReader(open(path))
-    values = []
+    values = collections.defaultdict(list)
     for record in reader:
-        values.append(float(record[field]))
-    if values:
-        return 1.0 * sum(values) / len(values)
-    else:
-        return 0.0
+        for (field, value) in record.items():
+            try:
+                v = float(value)
+                values[field].append(v)
+            except ValueError:
+                pass
+    for (field, field_values) in values.items():
+        values[field] = 1.0 * sum(field_values) / len(field_values)
+
+    return values
 
 def find_files(path):
     if path.endswith(NAME_EVAL):
@@ -52,4 +67,4 @@ def find_files(path):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2:])
+    main(sys.argv[1:])
