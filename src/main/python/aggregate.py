@@ -23,7 +23,10 @@ def main(paths):
         if not fields:
             fields = list(means.keys())
             fields.sort()
+            fields = ['MI-native', 'MI-native.ByUser'] + fields
             print ','.join(['n', 'inscale'] + fields)
+        means['MI-native'] = means['MI-' + str(inScale)]
+        means['MI-native.ByUser'] = means['MI-' + str(inScale) + '.ByUser']
 
         tokens = [n, inScale]
         for f in fields:
@@ -45,6 +48,12 @@ def get_field_means(path):
         for (field, value) in record.items():
             try:
                 v = float(value)
+                if field.startswith('MI-') and field.endswith('.ByUser'):
+                    key = field[len('MI-'):-len('.ByUser')]
+                    field = 'MI-' + str(SCALE_POINTS[key]) + '.ByUser'
+                elif field.startswith('MI-'):
+                    key = field[len('MI-'):]
+                    field = 'MI-' + str(SCALE_POINTS[key])
                 values[field].append(v)
             except ValueError:
                 pass
