@@ -53,7 +53,7 @@ def datasetConfigs = [
 phony("all") {
     dsKey = 'ml-10m'
     def dsConfig = datasetConfigs[dsKey]
-    for (int i : [0,1,5,10,15,20]) {
+    for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
         int n = (i == 0) ? 1000 : i
         for (def fd : fakeDomains) {
             depends crossfold(dsKey + '-' + fd.key + '-' + n) {
