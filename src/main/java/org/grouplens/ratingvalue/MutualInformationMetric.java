@@ -17,6 +17,8 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
     private String name = "MI";
     private PreferenceDomain inDomain;
     private PreferenceDomain outDomain;
+    private double sumValues;
+    private int numValues;
 
     public MutualInformationMetric(PreferenceDomain domain) {
         this.inDomain = domain;
@@ -47,6 +49,14 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
     @Override
     public String[] getUserColumnLabels() {
         return new String[] { name };
+    }
+
+    public double getMean() {
+        if (numValues == 0) {
+            return 0.0;
+        } else {
+            return sumValues / numValues;
+        }
     }
     
     class Accum implements TestUserMetricAccumulator {
@@ -92,6 +102,8 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
             double v = counter.calculate();
             double uv = userMutualInformationSum / nusers;
             logger.info("{}: overall {}, by-user {}", new Object[] {name, v, uv});
+            sumValues += v;
+            numValues++;
             return new String[]{
                     Double.toString(v),
                     Double.toString(uv)

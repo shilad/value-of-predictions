@@ -23,20 +23,15 @@ import java.util.List;
 public class RescaledRatingDao implements DataAccessObject {
     protected static final Logger logger = LoggerFactory.getLogger(RescaledRatingDao.class);
 
-    private final PreferenceDomain originalDomain;
-    private final PreferenceDomain newDomain;
-    private final PreferenceDomainQuantizer quantizer;
+
     private final EventCollectionDAO delegate;
     private final DataAccessObject dao;
     private double[] thresholds;
+    private final PreferenceDomainMapper mapper;
 
 
-    public RescaledRatingDao(PreferenceDomain originalDomain, PreferenceDomain newDomain, DataAccessObject dao, double [] thresholds) {
-        this.originalDomain = originalDomain;
-        this.newDomain = newDomain;
-        this.thresholds = thresholds;
-        this.quantizer = new PreferenceDomainQuantizer(newDomain);
-
+    public RescaledRatingDao(PreferenceDomainMapper mapper, DataAccessObject dao) {
+        this.mapper = mapper;
         List<Event> transformed = new ArrayList<Event>();
         for (Event event : dao.getEvents()) {
             if (event instanceof Rating) {
@@ -53,13 +48,7 @@ public class RescaledRatingDao implements DataAccessObject {
             return rating;
         }
         double r1 = rating.getPreference().getValue();
-        double r2 = newDomain.getMaximum();
-        for (int i = 0; i < thresholds.length; i++) {
-            if (r1 < thresholds[i] - 0.001) {
-                r2 = quantizer.getValue(i);
-                break;
-            }
-        }
+        double r2 = mapper.map(r1);
         return new SimpleRating(rating.getId(), rating.getUserId(), rating.getItemId(), r2, rating.getTimestamp());
     }
 
@@ -153,21 +142,18 @@ public class RescaledRatingDao implements DataAccessObject {
     }
     
     public static class Factory implements DAOFactory {
-        private final PreferenceDomain originalDomain;
-        private final PreferenceDomain newDomain;
         private final DAOFactory daoFactory;
         private double[] thresholds;
+        private PreferenceDomainMapper mapper;
 
-        public Factory(PreferenceDomain originalDomain, PreferenceDomain newDomain, DAOFactory daoFactory, double thresholds []) {
-            this.originalDomain = originalDomain;
-            this.newDomain = newDomain;
+        public Factory(PreferenceDomainMapper mapper, DAOFactory daoFactory) {
+            this.mapper = mapper;
             this.daoFactory = daoFactory;
-            this.thresholds = thresholds;
         }
 
         @Override
         public DataAccessObject create() {
-            return new RescaledRatingDao(originalDomain, newDomain, daoFactory.create(), thresholds);
+            return new RescaledRatingDao(mapper, daoFactory.create());
         }
 
         @Override

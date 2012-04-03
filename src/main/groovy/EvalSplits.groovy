@@ -100,7 +100,7 @@ phony("all") {
                         test "${pathPrefix}/test.${j}.csv"
                     }
                 }
-                metric CoveragePredictMetric
+                metric CoveragePre  dictMetric
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
                 metric NDCGPredictMetric
