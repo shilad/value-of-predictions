@@ -33,66 +33,50 @@ import org.grouplens.lenskit.norm.VectorNormalizer
 import org.grouplens.lenskit.norm.BaselineSubtractingNormalizer
 import org.grouplens.lenskit.knn.params.SimilarityDamping
 import org.grouplens.lenskit.knn.params.NeighborhoodSize
+import org.grouplens.lenskit.baseline.BaselineRatingPredictor
+import org.grouplens.ratingvalue.NormalizedMAEMetric
+import org.grouplens.ratingvalue.NormalizedRMSEMetric
 
 
 def buildDir = "pwd".execute().text.trim()
+def baselines = [ItemUserMeanPredictor]
 
-def fakeDomains = [
-        'binary' : [
-                domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                thresholds : [4.0] as double[]
-        ],
-        '5star' : [
-                domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                thresholds : [2.0,3.0,4.0,5.0] as double[]
-        ],
-        '5halfstar' : [
-                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
-        ]
+def inputDomains = [
+        '2' : new PreferenceDomain(1.0, 2.0, 1.0),
+        '5' : new PreferenceDomain(1.0, 5.0, 1.0),
+        '10' : new PreferenceDomain(0.5, 5.0, 5.0),
+        '81' : new PreferenceDomain(-10.0, 10.0, 0.25)
 ]
 
 def predictDomains = [
-        'binary' : [
-                domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                thresholds : [4.0] as double[]
-        ],
-        '5star' : [
-                domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                thresholds : [2.0,3.0,4.0,5.0] as double[]
-        ],
-        '5halfstar' : [
-                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
-        ]
+        '2' : new PreferenceDomain(1.0, 2.0, 1.0),
+        '5' : new PreferenceDomain(1.0, 5.0, 1.0),
+        '10' : new PreferenceDomain(0.5, 5.0, 0.5),
+        '20' : new PreferenceDomain(0.25, 5.0, 0.25),
     ]
 
 def datasetConfigs = [
-        'ml-100k' : [
-                'path' : buildDir + '/ml-100k/u.data',
-                'delimiter' : '\t',
-                'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
-        ],
-        'ml-1m' : [
-                'path' : buildDir + '/ml-1m/u.data',
-                'delimiter' : '::',
-                'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
-        ],
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
                 'delimiter' : '::',
-                'domain' : new PreferenceDomain(1.0, 5.0, 0.5)
+                'domains' : ['2','5','10']
         ],
+        'jester' : [
+                'path' : buildDir + '/jester_ratings.dat',
+                'delimiter' : '::',
+                'domains' : ['2','5','10','20']
+        ]
 ]
 
 phony("all") {
-    dsKey = 'ml-100k'
+    dsKey = 'ml-10m'
     def dsConfig = datasetConfigs[dsKey]
-    for (int i = 0; i <= 20; i++) {
+    for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
         int n = (i == 0) ? 1000 : i;
-        for (def fd : fakeDomains) {
-            depends trainTest(dsKey + '-' + fd.key + '-' + n) {
-                def pathPrefix = "${buildDir}/splits/${dsKey}/${fd.key}-${n}";
+        for (def inKey : dsConfig.domains) {
+            def inDomain = inputDomains[inKey]
+            depends trainTest(dsKey + '-' + inKey + '-' + n) {
+                def pathPrefix = "${buildDir}/splits/${dsKey}/${inKey}-${n}";
                 output "${pathPrefix}/eval-results.csv"
                 for (int j = 0; j < 5; j++) {
                     dataset {
@@ -100,12 +84,24 @@ phony("all") {
                         test "${pathPrefix}/test.${j}.csv"
                     }
                 }
-                metric CoveragePre  dictMetric
+
+                metric CoveragePredictMetric
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
                 metric NDCGPredictMetric
+                metric new NormalizedMAEMetric(inDomain)
+                metric new NormalizedRMSEMetric(inDomain)
+
                 for (def pd : predictDomains) {
-                    metric (new MutualInformationMetric("MI-${pd.key}", fd.value.domain, pd.value.domain))
+                    metric (new MutualInformationMetric("MI-${pd.key}", inDomain, pd.value, false))
+                    metric (new MutualInformationMetric("MI-${pd.key}-corrected", inDomain, pd.value, true))
+                }
+
+                for (bl in baselines) {
+                    algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {
+                        setComponent(RatingPredictor, BaselineRatingPredictor)
+                        setComponent(BaselinePredictor, bl)
+                    }
                 }
 
                 algorithm("ItemItem") {
