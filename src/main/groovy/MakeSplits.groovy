@@ -22,72 +22,46 @@ import org.grouplens.ratingvalue.RescaledRatingDao
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.ratingvalue.RetainCountPartition
 import org.grouplens.lenskit.eval.data.crossfold.TimestampOrder
+import org.grouplens.ratingvalue.PreferenceDomainMapper
 
 
 def buildDir = "pwd".execute().text.trim()
 
 def fakeDomains = [
-        'binary' : [
+        '2' : [
                 domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                thresholds : [4.0] as double[]
+                mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
         ],
-        '5star' : [
+        '5' : [
                 domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                thresholds : [2.0,3.0,4.0,5.0] as double[]
+                mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4]
         ],
-//        '5halfstar' : [
-//                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-//                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
-//        ]
+        '10' : [
+                domain : new PreferenceDomain(1.0, 5.0, 0.5),
+                mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        ]
 ]
 
-def predictDomains = [
-        'binary' : [
-                domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                thresholds : [4.0] as double[]
-        ],
-        '5star' : [
-                domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                thresholds : [2.0,3.0,4.0,5.0] as double[]
-        ],
-        '5halfstar' : [
-                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-                thresholds : [1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0] as double[]
-        ]
-    ]
-
 def datasetConfigs = [
-        'ml-100k' : [
-                'path' : buildDir + '/ml-100k/u.data',
-                'delimiter' : '\t',
-                'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
-        ],
-        'ml-1m' : [
-                'path' : buildDir + '/ml-1m/ratings.dat',
-                'delimiter' : '::',
-                'domain' : new PreferenceDomain(1.0, 5.0, 1.0)
-        ],
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
                 'delimiter' : '::',
-                'domain' : new PreferenceDomain(1.0, 5.0, 0.5)
+                'domain' : new PreferenceDomain(0.5, 5.0, 0.5)
         ],
 ]
 
 phony("all") {
-    dsKey = 'ml-100k'
+    dsKey = 'ml-10m'
     def dsConfig = datasetConfigs[dsKey]
-    for (int i = 0; i <= 20; i++) {
+    for (int i : [0,1,5,10,15,20]) {
         int n = (i == 0) ? 1000 : i
         for (def fd : fakeDomains) {
             depends crossfold(dsKey + '-' + fd.key + '-' + n) {
                 source csvfile(dsConfig.path) {
                     wrapper { csvDao ->
                         return new RescaledRatingDao.Factory(
-                                dsConfig.domain,
-                                fd.value.domain,
-                                csvDao,
-                                fd.value.thresholds
+                                new PreferenceDomainMapper(dsConfig.domain, fd.value.domain, fd.value.mapping),
+                                csvDao
                         );
                     }
                     file dsConfig.path
