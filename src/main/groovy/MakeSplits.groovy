@@ -30,15 +30,15 @@ def buildDir = "pwd".execute().text.trim()
 def fakeDomains = [
         '2' : [
                 domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
+                mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1] as int[]
         ],
         '5' : [
                 domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4]
+                mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4] as int[]
         ],
         '10' : [
-                domain : new PreferenceDomain(1.0, 5.0, 0.5),
-                mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+                domain : new PreferenceDomain(0.5, 5.0, 0.5),
+                mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as int[]
         ]
 ]
 
@@ -46,16 +46,53 @@ def datasetConfigs = [
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
                 'delimiter' : '::',
-                'domain' : new PreferenceDomain(0.5, 5.0, 0.5)
-        ],
-]
+                'domain' : new PreferenceDomain(0.5, 5.0, 0.5),
+                'fakeDomains' : [
+                    '2' : [
+                        domain : new PreferenceDomain(1.0, 2.0, 1.0),
+                        mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1] as int[]
+                    ],
+                    '5' : [
+                        domain : new PreferenceDomain(1.0, 5.0, 1.0),
+                        mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4] as int[]
+                    ],
+                    '10' : [
+                        domain : new PreferenceDomain(0.5, 5.0, 0.5),
+                        mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as int[]
+                    ]
+                ]
+            ],
+        'jester' : [
+                'path' : buildDir + '/jester_ratings.dat',
+                'delimiter' : '::',
+                'domain' : new PreferenceDomain(-10.0, 10.0, 0.25),
+                'fakeDomains' : [
+                    '2' : [
+                        domain : new PreferenceDomain(1.0, 2.0, 1.0),
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as int[]
+                    ],
+                    '5' : [
+                        domain : new PreferenceDomain(1.0, 5.0, 1.0),
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4] as int[]
+                    ],
+                    '10' : [
+                        domain : new PreferenceDomain(0.5, 5.0, 0.5),
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9] as int[]
+                    ],
+                    '81' : [
+                        domain : new PreferenceDomain(-10.0, 10.0, 0.25),
+                        mapping : 0..80 as int[]
+                    ]
+                ]
+            ],
+    ]
 
 phony("all") {
-    dsKey = 'ml-10m'
+    dsKey = 'jester'
     def dsConfig = datasetConfigs[dsKey]
     for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
         int n = (i == 0) ? 1000 : i
-        for (def fd : fakeDomains) {
+        for (def fd : dsConfig.fakeDomains) {
             depends crossfold(dsKey + '-' + fd.key + '-' + n) {
                 source csvfile(dsConfig.path) {
                     wrapper { csvDao ->
