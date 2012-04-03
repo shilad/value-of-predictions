@@ -46,24 +46,25 @@ import org.grouplens.ratingvalue.RescaledRatingDao
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.ratingvalue.MutualInformationMetric
 import org.grouplens.ratingvalue.RetainCountPartition
+import org.grouplens.ratingvalue.NormalizedMAEMetric
 
 def baselines = [ItemUserMeanPredictor]
 
-def buildDir = "/Users/shilad/Documents/Intellij/RatingPredictionValue"
+def buildDir = "pwd".execute().text.trim()
 
 def originalDomain = new PreferenceDomain(1.0, 5.0, 1.0)
-def newDomain = new PreferenceDomain(1.0, 2.0, 1.0)
+def newDomain = new PreferenceDomain(1.0, 5.0, 1.0)
 def predictDomain = new PreferenceDomain(1.0, 5.0, 1.0)
-def rescaledWrapper = { csvDao ->
-                        return new RescaledRatingDao.Factory(
-                                originalDomain, newDomain, csvDao,
-                                [4.0] as double[]
-                        );
-                    }
+//def rescaledWrapper = { csvDao ->
+//                        return new RescaledRatingDao.Factory(
+//                                originalDomain, newDomain, csvDao,
+//                                [4.0] as double[]
+//                        );
+//                    }
 
 def ml100k = crossfold("ml-100k") {
     source csvfile("${buildDir}/ml-100k/u.data") {
-        wrapper rescaledWrapper
+//        wrapper rescaledWrapper
         file "${buildDir}/ml-100k/u.data"
         delimiter "\t"
         domain originalDomain
@@ -77,7 +78,7 @@ def ml100k = crossfold("ml-100k") {
 
 def ml1m = crossfold("ml-1m") {
     source csvfile("${buildDir}/ml-1m/ratings.dat") {
-        wrapper rescaledWrapper
+//        wrapper rescaledWrapper
         file "${buildDir}/ml-1m/ratings.dat"
         delimiter "::"
         domain originalDomain
@@ -93,7 +94,7 @@ def ml1m = crossfold("ml-1m") {
 
 def ml10m = crossfold("ml-10M100K") {
     source csvfile("${buildDir}/ml-10M100K/ratings.dat") {
-        wrapper rescaledWrapper
+//        wrapper rescaledWrapper
         file "${buildDir}/ml-10M100K/ratings.dat"
         delimiter "::"
         domain originalDomain
@@ -106,8 +107,8 @@ def ml10m = crossfold("ml-10M100K") {
 }
 
 trainTest {
-    depends ml1m
-    dataset ml1m
+    depends ml100k
+    dataset ml100k
 
     output "${buildDir}/eval-results.csv"
     predictOutput "${buildDir}/eval-preds.csv"
@@ -116,7 +117,9 @@ trainTest {
     metric MAEPredictMetric
     metric RMSEPredictMetric
     metric NDCGPredictMetric
-    metric (new MutualInformationMetric(newDomain))
+    metric (new MutualInformationMetric("MI", newDomain, newDomain, false))
+    metric (new MutualInformationMetric("MI-corrected", newDomain, newDomain, true))
+    metric (new NormalizedMAEMetric(newDomain))
 
     for (bl in baselines) {
         algorithm(bl.simpleName.replaceFirst(/Predictor$/, "")) {

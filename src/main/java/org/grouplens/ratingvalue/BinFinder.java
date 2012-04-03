@@ -115,7 +115,7 @@ public class BinFinder {
 
     private double evalCandidateMapping(PreferenceDomainMapper pdm) throws EvalTaskFailedException {
         TrainTestEvalBuilder ttBuilder = new TrainTestEvalBuilder("ttbuilder");
-        MutualInformationMetric metric = new MutualInformationMetric(outDomain, new PreferenceDomain(0.5, 5.0, 0.5));
+        MutualInformationMetric metric = new MutualInformationMetric(outDomain, new PreferenceDomain(0.5, 5.0, 0.5), false);
         ttBuilder.addMetric(metric);
         for (TTDataSet ttds : splits) {
             GenericTTDataSet gttds = (GenericTTDataSet) ttds;

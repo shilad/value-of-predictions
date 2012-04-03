@@ -19,21 +19,25 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
     private PreferenceDomain outDomain;
     private double sumValues;
     private int numValues;
+    private boolean corrected = false;
 
-    public MutualInformationMetric(PreferenceDomain domain) {
+    public MutualInformationMetric(PreferenceDomain domain, boolean corrected) {
         this.inDomain = domain;
         this.outDomain = domain;
+        this.corrected = corrected;
     }
 
-    public MutualInformationMetric(PreferenceDomain inDomain, PreferenceDomain outDomain) {
+    public MutualInformationMetric(PreferenceDomain inDomain, PreferenceDomain outDomain, boolean corrected) {
         this.inDomain = inDomain;
         this.outDomain = outDomain;
+        this.corrected = corrected;
     }
 
-    public MutualInformationMetric(String name, PreferenceDomain inDomain, PreferenceDomain outDomain) {
+    public MutualInformationMetric(String name, PreferenceDomain inDomain, PreferenceDomain outDomain, boolean corrected) {
         this.name = name;
         this.inDomain = inDomain;
         this.outDomain = outDomain;
+        this.corrected = corrected;
     }
 
     @Override
@@ -67,21 +71,21 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
         private int nusers = 0;
 
         public Accum() {
-            this.counter = new MutualInformationCounter(inDomain, outDomain);
+            this.counter = new MutualInformationCounter(inDomain, outDomain, corrected);
         }
 
         @Override
         public String[] evaluate(TestUser user) {
             int n = 0;
             
-            MutualInformationCounter userCounter = new MutualInformationCounter(inDomain, outDomain);
+            MutualInformationCounter userCounter = new MutualInformationCounter(inDomain, outDomain, corrected);
 
             // overall
             for (Long2DoubleMap.Entry e: user.getTestRatings().fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
 //                double predicted = Utils.binRating(domain, e.getDoubleValue());
-                double predicted = e.getDoubleValue();
-                double actual = user.getPredictions().get(e.getLongKey());
+                double actual = e.getDoubleValue();
+                double predicted = user.getPredictions().get(e.getLongKey());
                 counter.count(predicted, actual);
                 userCounter.count(predicted, actual);
                 n++;
