@@ -5,60 +5,53 @@ import os
 
 
 NAME_EVAL = 'eval-results.csv'
-SCALE_POINTS = {
-    'binary' : 2,
-    '5star' : 5,
-    '5halfstar' : 9,
-}
 
 def main(paths):
     results = set()
     for path in paths:
         results.update(find_files(path))
 
+    print '\t'.join(['alg', 'in-scale', 'num-ratings', 'field', 'value'])
+
     fields = []
     for path in results:
-        (inScale, n) = get_info(path)
-        means = get_field_means(path)
-        if not fields:
-            fields = list(means.keys())
-            fields.sort()
-            fields = ['MI-native', 'MI-native.ByUser'] + fields
-            print ','.join(['n', 'inscale'] + fields)
-        means['MI-native'] = means['MI-' + str(inScale)]
-        means['MI-native.ByUser'] = means['MI-' + str(inScale) + '.ByUser']
+        (inScale, numRatings) = get_info(path)
+        means = get_algorithm_field_means(path)
 
-        tokens = [n, inScale]
-        for f in fields:
-            tokens.append(means.get(f, 0.0))
+        for (alg, alg_means) in means.items():
 
-        print ','.join(map(str, tokens))
+            # add in the "native" measure"
+            alg_means['MI-native'] = alg_means['MI-' + str(inScale)]
+            alg_means['MI-native-corrected'] = alg_means['MI-' + str(inScale) +'-corrected']
+            alg_means['MI-native.ByUser'] = alg_means['MI-' + str(inScale) + '.ByUser']
+
+            for (field, value) in alg_means.items():
+                    print ','.join([alg, str(inScale), str(numRatings), field, str(value)])
+
 
 def get_info(path):
-    """ Path format is ./splits/ml-100k/5star-2/eval-results.csv """
+    """ Path format is ./splits/ml-100k/5-1000/eval-results.csv """
     values = {}
     last_directory = os.path.split(os.path.split(path)[0])[1]
-    (inScale, n) = last_directory.split('-')
-    return SCALE_POINTS[inScale], int(n)
+    (inScale, numRatings) = last_directory.split('-')
+    return int(inScale), int(numRatings)
 
-def get_field_means(path):
+def get_algorithm_field_means(path):
     reader = csv.DictReader(open(path))
-    values = collections.defaultdict(list)
+    values = collections.defaultdict(lambda: collections.defaultdict(list))
+
     for record in reader:
+        alg = record['Algorithm']
         for (field, value) in record.items():
             try:
                 v = float(value)
-                if field.startswith('MI-') and field.endswith('.ByUser'):
-                    key = field[len('MI-'):-len('.ByUser')]
-                    field = 'MI-' + str(SCALE_POINTS[key]) + '.ByUser'
-                elif field.startswith('MI-'):
-                    key = field[len('MI-'):]
-                    field = 'MI-' + str(SCALE_POINTS[key])
-                values[field].append(v)
+                values[alg][field].append(v)
             except ValueError:
                 pass
-    for (field, field_values) in values.items():
-        values[field] = 1.0 * sum(field_values) / len(field_values)
+
+    for (alg, alg_values) in values.items():
+        for (field, field_values) in alg_values.items():
+            alg_values[field] = 1.0 * sum(field_values) / len(field_values)
 
     return values
 
