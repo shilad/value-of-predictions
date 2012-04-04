@@ -83,11 +83,10 @@ public class MutualInformationMetric extends AbstractTestUserMetric {
             // overall
             for (Long2DoubleMap.Entry e: user.getTestRatings().fast()) {
                 if (Double.isNaN(e.getDoubleValue())) continue;
-//                double predicted = Utils.binRating(domain, e.getDoubleValue());
                 double actual = e.getDoubleValue();
                 double predicted = user.getPredictions().get(e.getLongKey());
-                counter.count(predicted, actual);
-                userCounter.count(predicted, actual);
+                counter.count(actual, predicted);
+                userCounter.count(actual, predicted);
                 n++;
             }
             if (n > 0) {
