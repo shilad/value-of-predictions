@@ -27,21 +27,6 @@ import org.grouplens.ratingvalue.PreferenceDomainMapper
 
 def buildDir = "pwd".execute().text.trim()
 
-def fakeDomains = [
-        '2' : [
-                domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1] as int[]
-        ],
-        '5' : [
-                domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4] as int[]
-        ],
-        '10' : [
-                domain : new PreferenceDomain(0.5, 5.0, 0.5),
-                mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as int[]
-        ]
-]
-
 def datasetConfigs = [
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
