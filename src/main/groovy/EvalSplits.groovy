@@ -44,8 +44,8 @@ def baselines = [ItemUserMeanPredictor]
 def inputDomains = [
         '2' : new PreferenceDomain(1.0, 2.0, 1.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
-        '10' : new PreferenceDomain(0.5, 5.0, 1.0),
-        '81' : new PreferenceDomain(-10.0, 10.0, 0.25),
+        '10' : new PreferenceDomain(0.5, 5.0, 5.0),
+        '101' : new PreferenceDomain(-10.0, 10.0, 0.25)
 ]
 
 def predictDomains = [
@@ -53,21 +53,18 @@ def predictDomains = [
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 0.5),
         '20' : new PreferenceDomain(0.25, 5.0, 0.25),
-        '81' : new PreferenceDomain(-10.0, 10.0, 0.25),
     ]
 
 def datasetConfigs = [
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
                 'delimiter' : '::',
-                'domains' : ['10']
-                //'domains' : ['2','5','10']
+                'domains' : ['2','5','10']
         ],
         'jester' : [
                 'path' : buildDir + '/jester_ratings.dat',
                 'delimiter' : '::',
-                'domains' : ['10']
-                //'domains' : ['2','5','10', '81']
+                'domains' : ['2','5','10','101']
         ]
 ]
 
@@ -76,8 +73,6 @@ phony("all") {
     //dsKey = 'jester'
     def dsConfig = datasetConfigs[dsKey]
     for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
-    //for (int i : [1,2,3,4,5,10,15,20,30,40,50]) {
-    //for (int i : [0]) {
         int n = (i == 0) ? 1000 : i;
         for (def inKey : dsConfig.domains) {
             def inDomain = inputDomains[inKey]

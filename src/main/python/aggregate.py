@@ -11,7 +11,7 @@ def main(paths):
     for path in paths:
         results.update(find_files(path))
 
-    print '\t'.join(['alg', 'in-scale', 'num-ratings', 'field', 'value'])
+    print ','.join(['alg', 'in-scale', 'num-ratings', 'field', 'value'])
 
     fields = []
     for path in results:
