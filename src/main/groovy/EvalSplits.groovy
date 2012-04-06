@@ -45,7 +45,7 @@ def inputDomains = [
         '2' : new PreferenceDomain(1.0, 2.0, 1.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 5.0),
-        '81' : new PreferenceDomain(-10.0, 10.0, 0.25)
+        '101' : new PreferenceDomain(-10.0, 10.0, 0.25)
 ]
 
 def predictDomains = [
@@ -64,7 +64,7 @@ def datasetConfigs = [
         'jester' : [
                 'path' : buildDir + '/jester_ratings.dat',
                 'delimiter' : '::',
-                'domains' : ['2','5','10','20']
+                'domains' : ['2','5','10','101']
         ]
 ]
 

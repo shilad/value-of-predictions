@@ -27,21 +27,6 @@ import org.grouplens.ratingvalue.PreferenceDomainMapper
 
 def buildDir = "pwd".execute().text.trim()
 
-def fakeDomains = [
-        '2' : [
-                domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                mapping : [0, 0, 0, 0, 0, 0, 1, 1, 1, 1] as int[]
-        ],
-        '5' : [
-                domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                mapping : [0, 0, 0, 1, 1, 2, 2, 3, 3, 4] as int[]
-        ],
-        '10' : [
-                domain : new PreferenceDomain(0.5, 5.0, 0.5),
-                mapping : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as int[]
-        ]
-]
-
 def datasetConfigs = [
         'ml-10m' : [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
@@ -65,23 +50,23 @@ def datasetConfigs = [
         'jester' : [
                 'path' : buildDir + '/jester_ratings.dat',
                 'delimiter' : '::',
-                'domain' : new PreferenceDomain(-10.0, 10.0, 0.25),
+                'domain' : new PreferenceDomain(-10.0, 10.0, 0.2),
                 'fakeDomains' : [
                     '2' : [
                         domain : new PreferenceDomain(1.0, 2.0, 1.0),
-                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as int[]
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as int[]
                     ],
                     '5' : [
                         domain : new PreferenceDomain(1.0, 5.0, 1.0),
-                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4] as int[]
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4] as int[]
                     ],
                     '10' : [
                         domain : new PreferenceDomain(0.5, 5.0, 0.5),
-                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9] as int[]
+                        mapping : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9]  as int[]
                     ],
-                    '81' : [
-                        domain : new PreferenceDomain(-10.0, 10.0, 0.25),
-                        mapping : 0..80 as int[]
+                    '101' : [
+                        domain : new PreferenceDomain(-10.0, 10.0, 0.2),
+                        mapping : 0..101 as int[]
                     ]
                 ]
             ],
@@ -112,7 +97,11 @@ phony("all") {
                 if (n == 1000) {
                     order RandomOrder
                 } else {
-                    order TimestampOrder
+                    if (dsKey == 'jester') {
+                        order RandomOrder
+                    } else {
+                        order TimestampOrder
+                    }
                     partitionAlgorithm new RetainCountPartition(n)
                 }
             }
