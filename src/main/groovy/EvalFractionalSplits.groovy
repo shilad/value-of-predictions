@@ -18,6 +18,7 @@
  */
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
+import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
@@ -46,14 +47,17 @@ def inputDomains = [
         '2' : new PreferenceDomain(1.0, 2.0, 1.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 5.0),
-        '101' : new PreferenceDomain(-10.0, 10.0, 0.25)
+        '21' : new PreferenceDomain(-10.0, 10.0, 1.0),
+        '101' : new PreferenceDomain(-10.0, 10.0, 0.20),
 ]
 
 def predictDomains = [
-        '2' : new PreferenceDomain(1.0, 2.0, 1.0),
+        '2' : new PreferenceDomain(1.0, 5.0, 4.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 0.5),
         '20' : new PreferenceDomain(0.25, 5.0, 0.25),
+        '50' : new PreferenceDomain(0.10, 5.0, 0.10),
+        '100' : new PreferenceDomain(0.05, 5.0, 0.05),
     ]
 
 def datasetConfigs = [
@@ -73,15 +77,15 @@ def datasetConfigs = [
                         '2' : 15.47 / 15.47,
                         '5' : 15.47 / 16.39,
                         '10' : 15.47 / 16.55,
-                        '20' : 15.47 / 16.70,
+                        '21' : 15.47 / 16.70,
                         '101' : 15.47 / 17.06
                 ]
         ]
 ]
 
 phony("all") {
-    dsKey = 'ml-10m'
-    //dsKey = 'jester'
+    //dsKey = 'ml-10m'
+    dsKey = 'jester'
     def dsConfig = datasetConfigs[dsKey]
     for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
         int n = (i == 0) ? 1000 : i;
@@ -93,11 +97,12 @@ phony("all") {
                 def pathPrefix = "${buildDir}/splits/${dsKey}/${inKey}-${n}";
                 output "${pathPrefix}/eval-results-sampled.csv"
                 for (int j = 0; j < 5; j++) {
+                    def sampled = new CSVDataSourceBuilder()
+                                    .setName("${pathPrefix}/train.${j}.csv")
+                                    .setWrapper(new UserFilteringDataSourceWrapper(sample))
+                                    .build()
                     dataset {
-                        train dataset {
-                            name "${pathPrefix}/train.${j}.csv"
-                            wrapper new UserFilteringDataSourceWrapper(sample)
-                        }
+                        train sampled
                         test "${pathPrefix}/test.${j}.csv"
                     }
                 }
