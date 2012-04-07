@@ -45,14 +45,17 @@ def inputDomains = [
         '2' : new PreferenceDomain(1.0, 2.0, 1.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 5.0),
-        '101' : new PreferenceDomain(-10.0, 10.0, 0.25)
+        '21' : new PreferenceDomain(-10.0, 10.0, 1.0),
+        '101' : new PreferenceDomain(-10.0, 10.0, 0.20),
 ]
 
 def predictDomains = [
-        '2' : new PreferenceDomain(1.0, 2.0, 1.0),
+        '2' : new PreferenceDomain(1.0, 5.0, 4.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
         '10' : new PreferenceDomain(0.5, 5.0, 0.5),
         '20' : new PreferenceDomain(0.25, 5.0, 0.25),
+        '50' : new PreferenceDomain(0.10, 5.0, 0.10),
+        '100' : new PreferenceDomain(0.05, 5.0, 0.05),
     ]
 
 def datasetConfigs = [
@@ -64,13 +67,13 @@ def datasetConfigs = [
         'jester' : [
                 'path' : buildDir + '/jester_ratings.dat',
                 'delimiter' : '::',
-                'domains' : ['2','5','10','101']
+                'domains' : ['2','5','10','21', '101']
         ]
 ]
 
 phony("all") {
-    dsKey = 'ml-10m'
-    //dsKey = 'jester'
+    //dsKey = 'ml-10m'
+    dsKey = 'jester'
     def dsConfig = datasetConfigs[dsKey]
     for (int i : [0,1,2,3,4,5,10,15,20,30,40,50]) {
         int n = (i == 0) ? 1000 : i;

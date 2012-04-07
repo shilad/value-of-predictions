@@ -70,7 +70,7 @@ def datasetConfigs = [
                     ],
                     '101' : [
                         domain : new PreferenceDomain(-10.0, 10.0, 0.2),
-                        mapping : 0..101 as int[]
+                        mapping : 0..100 as int[]
                     ]
                 ]
             ],
