@@ -46,7 +46,7 @@ def baselines = [ItemUserMeanPredictor]
 def inputDomains = [
         '2' : new PreferenceDomain(1.0, 2.0, 1.0),
         '5' : new PreferenceDomain(1.0, 5.0, 1.0),
-        '10' : new PreferenceDomain(0.5, 5.0, 5.0),
+        '10' : new PreferenceDomain(0.5, 5.0, 1.0),
         '21' : new PreferenceDomain(-10.0, 10.0, 1.0),
         '101' : new PreferenceDomain(-10.0, 10.0, 0.20),
 ]
@@ -65,8 +65,8 @@ def datasetConfigs = [
                 'path' : buildDir + '/ml-10M100K/ratings.dat',
                 'delimiter' : '::',
                 'domains' : [
-                        '2' : 3.91 / 3.91,
-                        '5' : 3.91 / 4.09,
+                        //'2' : 3.91 / 3.91,
+                        //'5' : 3.91 / 4.09,
                         '10' : 3.91 / 4.22,
                 ]
         ],
@@ -74,11 +74,11 @@ def datasetConfigs = [
                 'path' : buildDir + '/jester_ratings.dat',
                 'delimiter' : '::',
                 'domains' : [
-                        '2' : 15.47 / 15.47,
-                        '5' : 15.47 / 16.39,
+                        //'2' : 15.47 / 15.47,
+                        //'5' : 15.47 / 16.39,
                         '10' : 15.47 / 16.55,
-                        '21' : 15.47 / 16.70,
-                        '101' : 15.47 / 17.06
+                        //'21' : 15.47 / 16.70,
+                        //'101' : 15.47 / 17.06
                 ]
         ]
 ]
